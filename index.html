@@ -3,7 +3,8 @@
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Verificador de Billetes</title>
-
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#000000">
 <style>
 body{
   margin:0;
@@ -296,9 +297,10 @@ async function escanearAutomatico(){
   escaneando = false;
 }
 
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("sw.js")
-    .then(() => console.log("Service Worker registrado"));
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
 }
 </script>
 <audio id="beep" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
