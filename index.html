@@ -6,36 +6,77 @@
 
 <style>
 body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#f2f2f2;
   text-align:center;
-  font-family:Arial;
 }
 
-button{
-  padding:15px;
-  margin:10px;
-  font-size:18px;
+/* PANTALLA INICIAL */
+#pantallaInicio{
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
 }
 
+#pantallaInicio h2{
+  margin-bottom:40px;
+  font-size:24px;
+}
+
+#pantallaInicio button{
+  width:80%;
+  height:80px;
+  font-size:28px;
+  margin:15px 0;
+  border:none;
+  border-radius:15px;
+  color:white;
+}
+
+/* Colores */
+#pantallaInicio button:nth-child(2){
+  background:#2E86C1; /* Bs 10 */
+}
+
+#pantallaInicio button:nth-child(3){
+  background:#28B463; /* Bs 20 */
+}
+
+#pantallaInicio button:nth-child(4){
+  background:#CB4335; /* Bs 50 */
+}
+
+/* ESCANER */
 .container{
   position:relative;
   display:inline-block;
-  width:90%;
+  width:95%;
+  margin-top:20px;
 }
 
 video{
   width:100%;
-  border-radius:10px;
+  border-radius:12px;
 }
 
 .guia{
   position:absolute;
   border:3px solid red;
-  width:50%;
-  height:15%;
+  width:60%;
+  height:18%;
   top:45%;
-  left:25%;
+  left:20%;
   border-radius:8px;
   pointer-events:none;
+}
+
+#resultado{
+  font-size:28px;
+  margin-top:20px;
+  font-weight:bold;
 }
 </style>
 
