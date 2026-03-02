@@ -1,4 +1,4 @@
-const CACHE_NAME = "verificador-v2";
+const CACHE_NAME = "verificador-v4";
 
 self.addEventListener("install", event => {
   self.skipWaiting();
@@ -8,8 +8,8 @@ self.addEventListener("install", event => {
         "./",
         "index.html",
         "manifest.json",
-        "icon-192.PNG",
-        "icon-512.PNG",
+        "icon-192.png",
+        "icon-512.png",
         "rango.js"
       ]);
     })
