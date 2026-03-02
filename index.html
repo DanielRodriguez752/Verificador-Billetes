@@ -80,25 +80,20 @@ async function capturar() {
 
   console.log("Texto detectado:", text);
 
-  const match = text.match(/\d{7,9}/);
+  const match = text.match(/(\d{7,9})\s?([A-Z])/);
 
-if (match) {
-  const numero = parseInt(match[0]);
+            if (match) {
+        const numero = parseInt(match[1]);
+        const serie = match[2];
 
-  if (estaInhabilitado(corteSeleccionado, numero)) {
-    document.getElementById("resultado").innerHTML =
-      "🔴 BILLETE INHABILITADO";
-    document.getElementById("resultado").style.color = "red";
-  } else {
-    document.getElementById("resultado").innerHTML =
-      "🟢 BILLETE VÁLIDO";
-    document.getElementById("resultado").style.color = "green";
-  }
-
-} else {
-  document.getElementById("resultado").innerHTML =
-    "⚠️ No se detectó número válido";
-}
+        if (estaInhabilitado(corteSeleccionado, serie, numero)) {
+            mostrarResultado("🔴 INHABILITADO", "red");
+            navigator.vibrate([300, 100, 300]);
+        } else {
+            mostrarResultado("🟢 VÁLIDO", "green");
+            navigator.vibrate(200);
+        }
+        } 
 }
 </script>
 
