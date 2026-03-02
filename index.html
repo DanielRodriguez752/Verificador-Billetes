@@ -99,6 +99,32 @@ video{
   margin-top:20px;
   font-weight:bold;
 }
+/* OVERLAY RESULTADO */
+#overlayResultado{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-size:8vw;
+  font-weight:bold;
+  color:white;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity 0.3s ease;
+  z-index:999;
+}
+
+.overlay-verde{
+  background:#1e8449;
+}
+
+.overlay-rojo{
+  background:#922b21;
+}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
@@ -229,13 +255,31 @@ async function escanearAutomatico(){
 
       document.getElementById("beep").play();
 
-      if(estaInhabilitado(corteSeleccionado,serie,numero)){
-        document.getElementById("resultado").innerHTML="🔴 INHABILITADO";
+      const overlay = document.getElementById("overlayResultado");
+
+    document.getElementById("beep").play();
+
+    if(estaInhabilitado(corteSeleccionado,serie,numero)){
+
+        overlay.className = "overlay-rojo";
+        overlay.innerHTML = "🔴 INHABILITADO";
         navigator.vibrate([300,100,300]);
-      }else{
-        document.getElementById("resultado").innerHTML="🟢 VÁLIDO";
+
+    }else{
+
+        overlay.className = "overlay-verde";
+        overlay.innerHTML = "🟢 VÁLIDO";
         navigator.vibrate(200);
-      }
+    }
+
+    overlay.style.opacity = "1";
+
+    bloqueado = true;
+
+    setTimeout(()=>{
+        overlay.style.opacity = "0";
+        bloqueado = false;
+    },2500);
 
       bloqueado = true;
 
@@ -254,5 +298,6 @@ async function escanearAutomatico(){
 
 </script>
 <audio id="beep" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
+<div id="overlayResultado"></div>
 </body>
 </html>
