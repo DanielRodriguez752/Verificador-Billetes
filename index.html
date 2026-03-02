@@ -60,6 +60,10 @@ function setCorte(valor) {
   corteSeleccionado = valor;
   document.getElementById("corteActual").innerText = valor;
 }
+if (!video.videoWidth) {
+  alert("La cámara aún no está lista");
+  return;
+}
 async function capturar() {
 
   const video = document.getElementById("video");
@@ -82,9 +86,13 @@ context.drawImage(video, x, y, w, h, 0, 0, w, h);
   document.getElementById("resultado").innerHTML = "⏳ Analizando...";
 
   const { data: { text } } = await Tesseract.recognize(
-    canvas,
-    'eng'
-  );
+  canvas,
+  'eng',
+  {
+    tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+    tessedit_pageseg_mode: 7
+  }
+);
 
   console.log("Texto detectado:", text);
 
@@ -101,6 +109,9 @@ context.drawImage(video, x, y, w, h, 0, 0, w, h);
             mostrarResultado("🟢 VÁLIDO", "green");
             navigator.vibrate(200);
         }
+        }
+        else {
+                document.getElementById("resultado").innerHTML = "❌ No se pudo leer el número";
         } 
 }
 </script>
