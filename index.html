@@ -40,17 +40,37 @@ video {
 </head>
 <body>
 
-<h2>Prueba de Cámara</h2>
+<h2>BILLETES</h2>
+
+<div id="pantallaInicio">
+  <h2>¿Qué billete vas a verificar?</h2>
+  <button onclick="iniciarEscaner(10)">Bs 10</button>
+  <button onclick="iniciarEscaner(20)">Bs 20</button>
+  <button onclick="iniciarEscaner(50)">Bs 50</button>
+</div>
+
+<div id="pantallaEscaner" style="display:none;">
+  <h2>Escaneando Billete Bs <span id="corteMostrado"></span></h2>
+
+  <div class="container">
+    <video id="video" autoplay playsinline></video>
+    <div class="guia"></div>
+  </div>
+
+  <div id="resultado"></div>
+</div>
 <div class="container">
   <video id="video" autoplay playsinline></video>
   <div class="guia"></div>
 </div>
 <br>
-<button onclick="setCorte(10)">Bs 10</button>
+
+<!--button onclick="setCorte(10)">Bs 10</button>
 <button onclick="setCorte(20)">Bs 20</button>
 <button onclick="setCorte(50)">Bs 50</button>
 
-<p>Corte seleccionado: <span id="corteActual">20</span></p>
+<p>Corte seleccionado: <span id="corteActual">20</span></p-->
+
 <br>
 <!--button onclick="capturar()">Capturar</button-->
 <canvas id="canvas" style="display:none;"></canvas>
@@ -58,6 +78,16 @@ video {
 
 <script src="rango.js"></script>
 <script>
+function iniciarEscaner(valor) {
+  corteSeleccionado = valor;
+
+  document.getElementById("corteMostrado").innerText = valor;
+  document.getElementById("pantallaInicio").style.display = "none";
+  document.getElementById("pantallaEscaner").style.display = "block";
+}
+
+
+
 document.addEventListener("DOMContentLoaded", async () => {
 
   const video = document.getElementById("video");
@@ -82,6 +112,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     setInterval(() => {
   escanearAutomatico();
 }, 1500);
+
+
 
     const track = stream.getVideoTracks()[0];
 const capabilities = track.getCapabilities();
@@ -132,7 +164,7 @@ function setCorte(valor) {
 }
 async function escanearAutomatico() {
 
-  if (escaneando) return;
+  if (escaneando || bloqueado) return;
   escaneando = true;
 
   const video = document.getElementById("video");
@@ -183,6 +215,8 @@ async function escanearAutomatico() {
       const numero = parseInt(match[1]);
       const serie = match[2];
 
+      document.getElementById("beep").play();
+
       if (estaInhabilitado(corteSeleccionado, serie, numero)) {
         document.getElementById("resultado").innerHTML = "🔴 INHABILITADO";
         navigator.vibrate([300,100,300]);
@@ -190,6 +224,12 @@ async function escanearAutomatico() {
         document.getElementById("resultado").innerHTML = "🟢 VÁLIDO";
         navigator.vibrate(200);
       }
+      bloqueado = true;
+
+        setTimeout(() => {
+         bloqueado = false;
+        document.getElementById("resultado").innerHTML = "";
+        }, 3000);
     }
 
   } catch (err) {
@@ -200,6 +240,6 @@ async function escanearAutomatico() {
 }
 
 </script>
-
+<audio id="beep" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
 </body>
 </html>
