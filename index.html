@@ -20,10 +20,17 @@ video{
 <h2>Prueba de Cámara</h2>
 <video id="video" autoplay playsinline></video>
 <br>
+<button onclick="setCorte(10)">Bs 10</button>
+<button onclick="setCorte(20)">Bs 20</button>
+<button onclick="setCorte(50)">Bs 50</button>
+
+<p>Corte seleccionado: <span id="corteActual">20</span></p>
+<br>
 <button onclick="capturar()">Capturar</button>
 <canvas id="canvas" style="display:none;"></canvas>
 <div id="resultado"></div>
 
+<script src="rangos.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded", async () => {
 
@@ -47,6 +54,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
 });
+let corteSeleccionado = 20;
+
+function setCorte(valor) {
+  corteSeleccionado = valor;
+  document.getElementById("corteActual").innerText = valor;
+}
 async function capturar() {
 
   const video = document.getElementById("video");
@@ -67,15 +80,25 @@ async function capturar() {
 
   console.log("Texto detectado:", text);
 
-  const match = text.match(/\d{9}/);
+  const match = text.match(/\d{7,9}/);
 
-  if (match) {
+if (match) {
+  const numero = parseInt(match[0]);
+
+  if (estaInhabilitado(corteSeleccionado, numero)) {
     document.getElementById("resultado").innerHTML =
-      "Número detectado: " + match[0];
+      "🔴 BILLETE INHABILITADO";
+    document.getElementById("resultado").style.color = "red";
   } else {
     document.getElementById("resultado").innerHTML =
-      "⚠️ No se detectó número válido";
+      "🟢 BILLETE VÁLIDO";
+    document.getElementById("resultado").style.color = "green";
   }
+
+} else {
+  document.getElementById("resultado").innerHTML =
+    "⚠️ No se detectó número válido";
+}
 }
 </script>
 
