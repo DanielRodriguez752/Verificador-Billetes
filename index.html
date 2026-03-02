@@ -126,7 +126,8 @@ video{
   background:#922b21;
 }
 </style>
-
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1e1e1e">
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
 <script src="rango.js"></script>
 </head>
@@ -296,6 +297,10 @@ async function escanearAutomatico(){
   escaneando = false;
 }
 
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js")
+    .then(() => console.log("Service Worker registrado"));
+}
 </script>
 <audio id="beep" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
 <div id="overlayResultado"></div>
