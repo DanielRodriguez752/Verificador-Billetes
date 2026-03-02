@@ -1,4 +1,4 @@
-const CACHE_NAME = "verificador-v1";
+
 
 self.addEventListener("install", event => {
   event.waitUntil(
