@@ -2,46 +2,50 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Prueba Cámara</title>
+<title>Verificador de Billetes</title>
+
 <style>
 body{
   text-align:center;
   font-family:Arial;
 }
-video{
+
+button{
+  padding:15px;
+  margin:10px;
+  font-size:18px;
+}
+
+.container{
+  position:relative;
+  display:inline-block;
   width:90%;
+}
+
+video{
+  width:100%;
   border-radius:10px;
 }
-</style>
-<style>
-.container {
-  position: relative;
-  display: inline-block;
-  width: 90%;
-}
 
-video {
-  width: 100%;
-  border-radius: 10px;
-}
-
-.guia {
-  position: absolute;
-  border: 3px solid red;
-  width: 50%;
-  height: 15%;
-  top: 45%;
-  left: 25%;
-  border-radius: 8px;
-  pointer-events: none;
+.guia{
+  position:absolute;
+  border:3px solid red;
+  width:50%;
+  height:15%;
+  top:45%;
+  left:25%;
+  border-radius:8px;
+  pointer-events:none;
 }
 </style>
+
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+<script src="rango.js"></script>
 </head>
+
 <body>
 
-<h2>BILLETES</h2>
-
+<!-- PANTALLA INICIAL -->
 <div id="pantallaInicio">
   <h2>¿Qué billete vas a verificar?</h2>
   <button onclick="iniciarEscaner(10)">Bs 10</button>
@@ -49,6 +53,7 @@ video {
   <button onclick="iniciarEscaner(50)">Bs 50</button>
 </div>
 
+<!-- PANTALLA ESCANER -->
 <div id="pantallaEscaner" style="display:none;">
   <h2>Escaneando Billete Bs <span id="corteMostrado"></span></h2>
 
@@ -57,121 +62,64 @@ video {
     <div class="guia"></div>
   </div>
 
-  <div id="resultado"></div>
+  <div id="resultado" style="font-size:24px; margin-top:20px;"></div>
 </div>
-<div class="container">
-  <video id="video" autoplay playsinline></video>
-  <div class="guia"></div>
-</div>
-<br>
 
-<!--button onclick="setCorte(10)">Bs 10</button>
-<button onclick="setCorte(20)">Bs 20</button>
-<button onclick="setCorte(50)">Bs 50</button>
-
-<p>Corte seleccionado: <span id="corteActual">20</span></p-->
-
-<br>
-<!--button onclick="capturar()">Capturar</button-->
 <canvas id="canvas" style="display:none;"></canvas>
-<div id="resultado"></div>
 
-<script src="rango.js"></script>
+<audio id="beep" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
+
 <script>
-function iniciarEscaner(valor) {
+
+let corteSeleccionado = 20;
+let escaneando = false;
+let bloqueado = false;
+
+function iniciarEscaner(valor){
   corteSeleccionado = valor;
 
   document.getElementById("corteMostrado").innerText = valor;
   document.getElementById("pantallaInicio").style.display = "none";
   document.getElementById("pantallaEscaner").style.display = "block";
+
+  iniciarCamara();
 }
 
-
-
-document.addEventListener("DOMContentLoaded", async () => {
+async function iniciarCamara(){
 
   const video = document.getElementById("video");
 
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    alert("Tu navegador no soporta acceso a la cámara o no estás en HTTPS.");
-    return;
-  }
-
-  try {
+  try{
     const stream = await navigator.mediaDevices.getUserMedia({
-  video: {
-    facingMode: { ideal: "environment" },
-    width: { ideal: 1280 },
-    height: { ideal: 720 },
-    focusMode: "continuous"
-  }
-});
+      video:{
+        facingMode:{ ideal:"environment" },
+        width:{ ideal:1280 },
+        height:{ ideal:720 },
+        focusMode:"continuous"
+      }
+    });
 
     video.srcObject = stream;
 
-    setInterval(() => {
-  escanearAutomatico();
-}, 1500);
+    setInterval(()=>{
+      escanearAutomatico();
+    },1500);
 
-
-
-    const track = stream.getVideoTracks()[0];
-const capabilities = track.getCapabilities();
-
-video.addEventListener("click", async (event) => {
-  if (capabilities.focusMode) {
-    try {
-      await track.applyConstraints({
-        advanced: [{ focusMode: "continuous" }]
-      });
-      console.log("Enfoque activado");
-    } catch (e) {
-      console.log("No se pudo aplicar enfoque", e);
-    }
+  }catch(error){
+    alert("Error cámara: " + error.message);
   }
-});
-video.addEventListener("click", async (event) => {
-  const rect = video.getBoundingClientRect();
-
-  const x = (event.clientX - rect.left) / rect.width;
-  const y = (event.clientY - rect.top) / rect.height;
-
-  try {
-    await track.applyConstraints({
-      advanced: [{
-        pointsOfInterest: [{ x, y }]
-      }]
-    });
-    console.log("Enfocando en punto tocado");
-  } catch (err) {
-    console.log("POI no soportado", err);
-  }
-});
-
-  } catch (error) {
-    alert("Error al acceder a la cámara: " + error.message);
-    console.log(error);
-  }
-
-});
-let corteSeleccionado = 20;
-
-let escaneando = false;
-
-function setCorte(valor) {
-  corteSeleccionado = valor;
-  document.getElementById("corteActual").innerText = valor;
 }
-async function escanearAutomatico() {
 
-  if (escaneando || bloqueado) return;
+async function escanearAutomatico(){
+
+  if(escaneando || bloqueado) return;
   escaneando = true;
 
   const video = document.getElementById("video");
   const canvas = document.getElementById("canvas");
   const context = canvas.getContext("2d");
 
-  if (!video.videoWidth) {
+  if(!video.videoWidth){
     escaneando = false;
     return;
   }
@@ -184,56 +132,59 @@ async function escanearAutomatico() {
   canvas.width = w;
   canvas.height = h;
 
-  context.drawImage(video, x, y, w, h, 0, 0, w, h);
+  context.drawImage(video,x,y,w,h,0,0,w,h);
 
-  // Convertir a alto contraste
-  const imageData = context.getImageData(0, 0, w, h);
+  // Alto contraste
+  const imageData = context.getImageData(0,0,w,h);
   const data = imageData.data;
 
-  for (let i = 0; i < data.length; i += 4) {
-    const gray = data[i] * 0.3 + data[i+1] * 0.59 + data[i+2] * 0.11;
+  for(let i=0;i<data.length;i+=4){
+    const gray = data[i]*0.3 + data[i+1]*0.59 + data[i+2]*0.11;
     const value = gray > 140 ? 255 : 0;
     data[i] = data[i+1] = data[i+2] = value;
   }
 
-  context.putImageData(imageData, 0, 0);
+  context.putImageData(imageData,0,0);
 
-  try {
-    const { data: { text } } = await Tesseract.recognize(
+  try{
+
+    const { data:{ text } } = await Tesseract.recognize(
       canvas,
       'eng',
       {
-        tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-        tessedit_pageseg_mode: 7
+        tessedit_char_whitelist:'0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+        tessedit_pageseg_mode:7
       }
     );
 
-    const limpio = text.replace(/\s/g, '');
+    const limpio = text.replace(/\s/g,'');
     const match = limpio.match(/(\d{7,9})([A-Z])/);
 
-    if (match) {
+    if(match){
+
       const numero = parseInt(match[1]);
       const serie = match[2];
 
       document.getElementById("beep").play();
 
-      if (estaInhabilitado(corteSeleccionado, serie, numero)) {
-        document.getElementById("resultado").innerHTML = "🔴 INHABILITADO";
+      if(estaInhabilitado(corteSeleccionado,serie,numero)){
+        document.getElementById("resultado").innerHTML="🔴 INHABILITADO";
         navigator.vibrate([300,100,300]);
-      } else {
-        document.getElementById("resultado").innerHTML = "🟢 VÁLIDO";
+      }else{
+        document.getElementById("resultado").innerHTML="🟢 VÁLIDO";
         navigator.vibrate(200);
       }
+
       bloqueado = true;
 
-        setTimeout(() => {
-         bloqueado = false;
-        document.getElementById("resultado").innerHTML = "";
-        }, 3000);
+      setTimeout(()=>{
+        bloqueado = false;
+        document.getElementById("resultado").innerHTML="";
+      },3000);
     }
 
-  } catch (err) {
-    console.log("Error OCR:", err);
+  }catch(e){
+    console.log("Error OCR:",e);
   }
 
   escaneando = false;
