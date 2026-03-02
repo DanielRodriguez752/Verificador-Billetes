@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prueba Cámara</title>
+<style>
+body{
+  text-align:center;
+  font-family:Arial;
+}
+video{
+  width:90%;
+  border-radius:10px;
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+</head>
+<body>
+
+<h2>Prueba de Cámara</h2>
+<video id="video" autoplay playsinline></video>
+<br>
+<button onclick="capturar()">Capturar</button>
+<canvas id="canvas" style="display:none;"></canvas>
+<div id="resultado"></div>
+
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+
+  const video = document.getElementById("video");
+
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    alert("Tu navegador no soporta acceso a la cámara o no estás en HTTPS.");
+    return;
+  }
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "environment" }
+    });
+
+    video.srcObject = stream;
+
+  } catch (error) {
+    alert("Error al acceder a la cámara: " + error.message);
+    console.log(error);
+  }
+
+});
+async function capturar() {
+
+  const video = document.getElementById("video");
+  const canvas = document.getElementById("canvas");
+  const context = canvas.getContext("2d");
+
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+
+  context.drawImage(video, 0, 0);
+
+  document.getElementById("resultado").innerHTML = "⏳ Analizando...";
+
+  const { data: { text } } = await Tesseract.recognize(
+    canvas,
+    'eng'
+  );
+
+  console.log("Texto detectado:", text);
+
+  const match = text.match(/\d{9}/);
+
+  if (match) {
+    document.getElementById("resultado").innerHTML =
+      "Número detectado: " + match[0];
+  } else {
+    document.getElementById("resultado").innerHTML =
+      "⚠️ No se detectó número válido";
+  }
+}
+</script>
+
+</body>
+</html>
