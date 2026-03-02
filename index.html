@@ -52,7 +52,7 @@ video {
 
 <p>Corte seleccionado: <span id="corteActual">20</span></p>
 <br>
-<button onclick="capturar()">Capturar</button>
+<!--button onclick="capturar()">Capturar</button-->
 <canvas id="canvas" style="display:none;"></canvas>
 <div id="resultado"></div>
 
@@ -78,6 +78,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
     video.srcObject = stream;
+
+    setInterval(() => {
+  escanearAutomatico();
+}, 1500);
+
     const track = stream.getVideoTracks()[0];
 const capabilities = track.getCapabilities();
 
@@ -119,19 +124,23 @@ video.addEventListener("click", async (event) => {
 });
 let corteSeleccionado = 20;
 
+let escaneando = false;
+
 function setCorte(valor) {
   corteSeleccionado = valor;
   document.getElementById("corteActual").innerText = valor;
 }
+async function escanearAutomatico() {
 
-async function capturar() {
+  if (escaneando) return;
+  escaneando = true;
 
   const video = document.getElementById("video");
   const canvas = document.getElementById("canvas");
   const context = canvas.getContext("2d");
 
   if (!video.videoWidth) {
-    alert("La cámara aún no está lista");
+    escaneando = false;
     return;
   }
 
@@ -145,46 +154,51 @@ async function capturar() {
 
   context.drawImage(video, x, y, w, h, 0, 0, w, h);
 
-  document.getElementById("resultado").innerHTML = "⏳ Analizando...";
+  // Convertir a alto contraste
+  const imageData = context.getImageData(0, 0, w, h);
+  const data = imageData.data;
 
-  const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-const data = imageData.data;
-
-for (let i = 0; i < data.length; i += 4) {
-  const gray = data[i] * 0.3 + data[i+1] * 0.59 + data[i+2] * 0.11;
-  const value = gray > 140 ? 255 : 0;
-  data[i] = data[i+1] = data[i+2] = value;
-}
-
-context.putImageData(imageData, 0, 0);
-  const { data: { text } } = await Tesseract.recognize(
-    canvas,
-    'eng',
-    {
-      tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-      tessedit_pageseg_mode: 7
-    }
-  );
-
-  console.log("Texto detectado:", text);
-
-  const match = text.match(/(\d{7,9})\s?([A-Z])/);
-
-  if (match) {
-    const numero = parseInt(match[1]);
-    const serie = match[2];
-
-    if (estaInhabilitado(corteSeleccionado, serie, numero)) {
-      document.getElementById("resultado").innerHTML = "🔴 INHABILITADO";
-      navigator.vibrate([300,100,300]);
-    } else {
-      document.getElementById("resultado").innerHTML = "🟢 VÁLIDO";
-      navigator.vibrate(200);
-    }
-  } else {
-    document.getElementById("resultado").innerHTML = "❌ No se pudo leer el número";
+  for (let i = 0; i < data.length; i += 4) {
+    const gray = data[i] * 0.3 + data[i+1] * 0.59 + data[i+2] * 0.11;
+    const value = gray > 140 ? 255 : 0;
+    data[i] = data[i+1] = data[i+2] = value;
   }
+
+  context.putImageData(imageData, 0, 0);
+
+  try {
+    const { data: { text } } = await Tesseract.recognize(
+      canvas,
+      'eng',
+      {
+        tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+        tessedit_pageseg_mode: 7
+      }
+    );
+
+    const limpio = text.replace(/\s/g, '');
+    const match = limpio.match(/(\d{7,9})([A-Z])/);
+
+    if (match) {
+      const numero = parseInt(match[1]);
+      const serie = match[2];
+
+      if (estaInhabilitado(corteSeleccionado, serie, numero)) {
+        document.getElementById("resultado").innerHTML = "🔴 INHABILITADO";
+        navigator.vibrate([300,100,300]);
+      } else {
+        document.getElementById("resultado").innerHTML = "🟢 VÁLIDO";
+        navigator.vibrate(200);
+      }
+    }
+
+  } catch (err) {
+    console.log("Error OCR:", err);
+  }
+
+  escaneando = false;
 }
+
 </script>
 
 </body>
