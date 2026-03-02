@@ -13,12 +13,38 @@ video{
   border-radius:10px;
 }
 </style>
+<style>
+.container {
+  position: relative;
+  display: inline-block;
+  width: 90%;
+}
+
+video {
+  width: 100%;
+  border-radius: 10px;
+}
+
+.guia {
+  position: absolute;
+  border: 3px solid red;
+  width: 50%;
+  height: 15%;
+  top: 45%;
+  left: 25%;
+  border-radius: 8px;
+  pointer-events: none;
+}
+</style>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
 </head>
 <body>
 
 <h2>Prueba de Cámara</h2>
-<video id="video" autoplay playsinline></video>
+<div class="container">
+  <video id="video" autoplay playsinline></video>
+  <div class="guia"></div>
+</div>
 <br>
 <button onclick="setCorte(10)">Bs 10</button>
 <button onclick="setCorte(20)">Bs 20</button>
@@ -52,6 +78,38 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
     video.srcObject = stream;
+    const track = stream.getVideoTracks()[0];
+const capabilities = track.getCapabilities();
+
+video.addEventListener("click", async (event) => {
+  if (capabilities.focusMode) {
+    try {
+      await track.applyConstraints({
+        advanced: [{ focusMode: "continuous" }]
+      });
+      console.log("Enfoque activado");
+    } catch (e) {
+      console.log("No se pudo aplicar enfoque", e);
+    }
+  }
+});
+video.addEventListener("click", async (event) => {
+  const rect = video.getBoundingClientRect();
+
+  const x = (event.clientX - rect.left) / rect.width;
+  const y = (event.clientY - rect.top) / rect.height;
+
+  try {
+    await track.applyConstraints({
+      advanced: [{
+        pointsOfInterest: [{ x, y }]
+      }]
+    });
+    console.log("Enfocando en punto tocado");
+  } catch (err) {
+    console.log("POI no soportado", err);
+  }
+});
 
   } catch (error) {
     alert("Error al acceder a la cámara: " + error.message);
