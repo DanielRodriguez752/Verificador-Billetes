@@ -8,7 +8,8 @@
 body{
   margin:0;
   font-family:Arial, sans-serif;
-  background:#f2f2f2;
+  background:#1e1e1e; /* Fondo plomo oscuro */
+  color:#f2f2f2;
   text-align:center;
 }
 
@@ -24,29 +25,48 @@ body{
 #pantallaInicio h2{
   margin-bottom:40px;
   font-size:24px;
+  color:#ffffff;
 }
 
+/* BOTONES GRANDES */
 #pantallaInicio button{
-  width:80%;
-  height:80px;
+  width:85%;
+  height:85px;
   font-size:28px;
   margin:15px 0;
   border:none;
-  border-radius:15px;
+  border-radius:18px;
   color:white;
+  font-weight:bold;
+  cursor:pointer;
+
+  /* RELIEVE */
+  box-shadow: 
+    0 8px 0 rgba(0,0,0,0.6),
+    0 12px 20px rgba(0,0,0,0.5);
+
+  transition: all 0.15s ease;
 }
 
-/* Colores */
+/* EFECTO AL PRESIONAR */
+#pantallaInicio button:active{
+  transform: translateY(6px);
+  box-shadow: 
+    0 2px 0 rgba(0,0,0,0.6),
+    0 6px 12px rgba(0,0,0,0.4);
+}
+
+/* Colores individuales */
 #pantallaInicio button:nth-child(2){
-  background:#2E86C1; /* Bs 10 */
+  background:linear-gradient(145deg,#2E86C1,#1B4F72);
 }
 
 #pantallaInicio button:nth-child(3){
-  background:#28B463; /* Bs 20 */
+  background:linear-gradient(145deg,#28B463,#196F3D);
 }
 
 #pantallaInicio button:nth-child(4){
-  background:#CB4335; /* Bs 50 */
+  background:linear-gradient(145deg,#CB4335,#78281F);
 }
 
 /* ESCANER */
@@ -59,22 +79,23 @@ body{
 
 video{
   width:100%;
-  border-radius:12px;
+  border-radius:15px;
+  box-shadow:0 8px 25px rgba(0,0,0,0.6);
 }
 
 .guia{
   position:absolute;
-  border:3px solid red;
+  border:3px solid #00ff88;
   width:60%;
   height:18%;
   top:45%;
   left:20%;
-  border-radius:8px;
+  border-radius:10px;
   pointer-events:none;
 }
 
 #resultado{
-  font-size:28px;
+  font-size:30px;
   margin-top:20px;
   font-weight:bold;
 }
@@ -88,7 +109,7 @@ video{
 
 <!-- PANTALLA INICIAL -->
 <div id="pantallaInicio">
-  <h2>¿Qué billete vas a verificar?</h2>
+  <h2 style="position:absolute; top:40px;">¿Qué billete vas a verificar?</h2>
   <button onclick="iniciarEscaner(10)">Bs 10</button>
   <button onclick="iniciarEscaner(20)">Bs 20</button>
   <button onclick="iniciarEscaner(50)">Bs 50</button>
